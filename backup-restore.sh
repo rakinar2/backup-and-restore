@@ -137,6 +137,21 @@ install_programs_2(){
        echo "Installation Aborted.";
      fi
 }
+md5_gen(){
+  command touch md5sum.log;
+  ( command md5sum backup.tar > md5sum.log ) || ( command md5sum backup.tar.gz > md5sum.log ) || ( command md5sum backup.tar.lz4  ) || {
+    echo "E: no backup file found.";
+  };
+}
+
+sha1_gen(){
+  command touch sha1sum.log;
+  ( command sha1sum backup.tar > sha1sum.log ) || ( command sha1sum backup.tar.gz > sha1sum.log ) || ( command sha1sum backup.tar.lz4 > sha1sum.log ) || {
+     echo "E: no backup file found.";
+  };
+}
+
+
 
 menu_controll_1(){
   echo -e "\e[1m\e[36m   Menu: \e[0m";
@@ -162,6 +177,14 @@ menu_controll_1(){
        echo " E: Error creating backup.tar!";
        };
     sleep 0.7;
+    echo -e "\e[32m\e[1m";
+    echo " [*] Generating md5 sum...";
+    sleep 1;
+    md5_gen;
+    echo " [*] Generating sha1 sum...";
+    sleep 1.5;
+    sha1_gen;
+    echo -e "\e[0m";
     progress;
     echo -e "\e[32m [*] Successfully created backup.tar!          \e[0m"
       
@@ -172,6 +195,15 @@ menu_controll_1(){
        echo " E: Error creating backup.tar.gz!";
        };
     sleep 0.7;
+    
+    echo -e "\e[32m\e[1m";
+    echo " [*] Generating md5 sum...";
+    sleep 1;
+    md5_gen;
+    echo " [*] Generating sha1 sum...";
+    sleep 1.5;
+    sha1_gen;
+    echo -e "\e[0m";
     progress;
     echo -e "\e[32m [*] Successfully created backup.tar.gz!      \e[0m"
       
@@ -184,8 +216,17 @@ menu_controll_1(){
     command  tar cf - ${file_dir_1[0]} | lz4 -v > backup.tar.lz4;
     } && {
      sleep 0.7;
+     
+    echo -e "\e[32m\e[1m";
+    echo " [*] Generating md5 sum...";
+    sleep 1;
+    md5_gen;
+    echo " [*] Generating sha1 sum...";
+    sleep 1.5;
+    sha1_gen;
+    echo -e "\e[0m";
      progress;
-     echo -e "\e[1m\e[32m [*] Successfully created backup.tar.lz4! \e[0m \r";
+     echo -e "\e[1m\e[32m [*] Successfully created backup.tar.lz4! \e[0m      \r";
      
      } || {
        echo " E: Error creating backup.tar.lz4!";
@@ -198,8 +239,34 @@ menu_controll_1(){
     ;;
     "2" )
       check_programs;
-      echo "searching backup file...";
       echo -e "\e[36m To Restore or extract files in backup, press Y/y to extract it or press N/n to avoid it.\e[0m";
+      echo "Searching backup file...";
+      echo -e "\e[32m\e[1m";
+      echo " [*] Backup file found!";
+      echo " [*] Matching md5 sum...";
+      sleep 2;
+ cmdcat=command cat md5sum.log;
+ cmdtar=command md5sum backup.tar;
+ cmdtgz=command md5sum backup.tar.gz;
+ cmdtlz4=command md5sum backup.tar.lz4;
+ if [[ $cmdtar == $cmdcat || $cmdtgz = $cmdcat || $cmdtlz4 = $cmdcat ]];
+ then
+   echo -ne "...\r";
+ fi
+            
+      echo " [*] Matching sha1 sum...";
+      sleep 1.3;
+      cmdcata=command cat sha1sum.log;
+cmdtara=command sha1sum backup.tar;
+cmdtgza=command sha1sum backup.tar.gz;
+cmdtlz4a=command sha1sum backup.tar.lz4;
+if [[ $cmdtara == $cmdcata || $cmdtgza = $cmdcata || $cmdtlz4a = $cmdcata ]];
+then
+  echo -ne "...\r";
+fi
+
+      echo " [*] Restoring...";
+      echo -e "\e[0m";
      { 
       ( command tar -xwvf backup.tar ) || ( command tar -xzwvf backup.tar.gz ) || ( ( command lz4 -d backup.tar.lz4 ) && ( tar -xwvf backup.tar ) );   
        echo -e "\e[32m [*] Restore Success! \e[0m";
